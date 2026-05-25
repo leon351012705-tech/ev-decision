@@ -56,7 +56,7 @@ class LlmService {
   static String _buildUserPrompt(UserProfile profile, List<Car> cars) {
     final carsJson = jsonEncode(cars.map((c) => c.toJson()).toList());
     return '''
-请基于以下用户画像和候选车型，生成一份个性化的购车决策分析。
+请基于以下用户画像，从候选车型库中挑选最适合该用户的 3 款车，并给出个性化分析。
 
 【用户画像】
 - 主要用车场景：${profile.scenario}
@@ -65,22 +65,24 @@ class LlmService {
 - 预算区间：${profile.budget}
 - 最在意：${profile.priorities.join('、')}
 
-【候选车型】
+【候选车型库】
 $carsJson
 
 【要求】
-1. 必须结合用户的实际场景给出推荐，不要堆砌参数。
-2. 评价要有针对性，例如：不能装家充的用户要重点关注快充能力。
-3. pros / cons 用"对你来说""你"这样的第二人称，具体到这位用户。
-4. 诚实指出每款车的短板，不做营销话术。
-5. ranking 按推荐优先级从高到低排列，必须包含全部候选车型。
+1. 从车型库里挑出最适合该用户的 **3 款**（不是全部），按推荐度从高到低放进 ranking 数组。
+2. 推荐必须结合用户的实际场景，不堆砌参数。
+3. 评价要有针对性，例如：不能装家充的用户要重点关注快充能力。
+4. pros / cons 用"对你来说""你"这样的第二人称，具体到这位用户。
+5. 诚实指出每款车的短板，不做营销话术。
+6. ranking 中的 car_id 必须来自候选车型库，不要编造。
+7. pros / cons 数组里的每一项必须是一句独立、自然、不超过 30 字的中文短句，不要含 JSON 字段名、引号、方括号或其他结构标记。
 
 只输出 JSON，不要任何额外文字或解释，严格使用以下结构：
 {
   "conclusion": "一句话结论，直接说最推荐哪款车、核心理由",
   "ranking": [
     {
-      "car_id": "候选车型的 id",
+      "car_id": "候选车型库里的 id",
       "headline": "针对这位用户，这款车的一句话定位",
       "pros": ["对你来说合适的点", "..."],
       "cons": ["你需要注意的点", "..."]
@@ -106,27 +108,14 @@ $carsJson
     }
   }
 
-  /// 解析为 AiReport，并校验 / 补全候选车型。
+  /// 解析为 AiReport：过滤非法 id，截取前 3 项作为最终推荐。
   static AiReport _parseReport(Map<String, dynamic> json, List<Car> cars) {
     final validIds = cars.map((c) => c.id).toSet();
     final rawRanking = (json['ranking'] as List? ?? const [])
         .map((e) => CarVerdict.fromJson(e as Map<String, dynamic>))
         .where((v) => validIds.contains(v.carId))
+        .take(3)
         .toList();
-
-    final present = rawRanking.map((v) => v.carId).toSet();
-    for (final car in cars) {
-      if (!present.contains(car.id)) {
-        rawRanking.add(
-          CarVerdict(
-            carId: car.id,
-            headline: '',
-            pros: car.highlights,
-            cons: car.weaknesses,
-          ),
-        );
-      }
-    }
 
     if (rawRanking.isEmpty) {
       throw const FormatException('模型返回的 ranking 为空');

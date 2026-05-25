@@ -54,8 +54,9 @@ class ReportEngine {
   }
 
   /// 大模型不可用时的本地兜底报告，结构与 AI 报告一致。
+  /// 从全部候选车型中按规则评分，取分数最高的 3 款。
   static AiReport buildLocalReport(UserProfile profile, List<Car> cars) {
-    final ranked = rankCars(profile, cars);
+    final ranked = rankCars(profile, cars).take(3).toList();
     final top = ranked.first;
     final priority =
         profile.priorities.isNotEmpty ? profile.priorities.first : '综合表现';

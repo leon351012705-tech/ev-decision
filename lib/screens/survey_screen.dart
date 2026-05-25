@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/survey.dart';
 import '../providers/assessment_provider.dart';
 import '../theme/app_theme.dart';
-import 'car_select_screen.dart';
+import 'loading_screen.dart';
 
 /// 引导问卷页：单页一焦点，一次一题。
 class SurveyScreen extends StatefulWidget {
@@ -31,7 +31,7 @@ class _SurveyScreenState extends State<SurveyScreen> {
   void _next() {
     if (_isLast) {
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const CarSelectScreen()),
+        MaterialPageRoute(builder: (_) => const LoadingScreen()),
       );
     } else {
       setState(() => _step++);
@@ -112,7 +112,7 @@ class _SurveyScreenState extends State<SurveyScreen> {
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
               child: FilledButton(
                 onPressed: answered ? _next : null,
-                child: Text(_isLast ? '选择候选车型' : '下一步'),
+                child: Text(_isLast ? '生成决策报告' : '下一步'),
               ),
             ),
           ],

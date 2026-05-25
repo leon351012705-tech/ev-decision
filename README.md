@@ -10,6 +10,7 @@
 
 - 5 题引导式问卷，刻画用户画像（场景 / 里程 / 充电条件 / 预算 / 偏好）
 - 15 款热门电动车，覆盖 8 万–35 万 三个价位段
+- 答完直接出报告——**AI 从全部车型里挑出最适合你的 3 款**，不要你先手动筛选
 - 调用 **智谱 GLM-4-Flash** 生成个性化决策报告：
   - 一句话结论（黑色高对比卡片）
   - 候选车排序 + 星级
@@ -21,13 +22,13 @@
 
 ## 演示
 
-| 欢迎 | 问卷 | 选车 | 报告（结论） |
-|------|------|------|------|
-| ![](docs/screenshots/01-welcome.png) | ![](docs/screenshots/02-survey.png) | ![](docs/screenshots/03-car-select.png) | ![](docs/screenshots/04-report-top.png) |
+| 欢迎 | 问卷 | 报告（结论 + 排序） |
+|------|------|------|
+| ![](docs/screenshots/01-welcome.png) | ![](docs/screenshots/02-survey.png) | ![](docs/screenshots/03-report-top.png) |
 
 | 报告（详细分析 + 建议） | 历史记录 |
 |------|------|
-| ![](docs/screenshots/05-report-bottom.png) | ![](docs/screenshots/06-history.png) |
+| ![](docs/screenshots/04-report-bottom.png) | ![](docs/screenshots/05-history.png) |
 
 ## 技术栈
 
@@ -61,7 +62,6 @@ lib/
     home_shell.dart               底部导航容器
     home_tab.dart                 欢迎首页
     survey_screen.dart            5 题问卷
-    car_select_screen.dart        候选车选择
     loading_screen.dart           加载（调用 LLM）
     report_screen.dart            决策报告
     history_screen.dart           历史记录

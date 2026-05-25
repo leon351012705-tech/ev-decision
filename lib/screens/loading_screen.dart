@@ -28,26 +28,29 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   Future<void> _generate() async {
     final start = DateTime.now();
-    final provider = context.read<AssessmentProvider>();
-    final profile = provider.buildProfile();
-    final cars = await CarRepository.byIds(provider.selectedCarIds);
+    final profile = context.read<AssessmentProvider>().buildProfile();
+    final allCars = await CarRepository.loadCars();
 
     AiReport report;
     if (LlmService.configured) {
       try {
-        report = await LlmService.generateReport(profile, cars);
+        report = await LlmService.generateReport(profile, allCars);
       } catch (_) {
-        report = ReportEngine.buildLocalReport(profile, cars);
+        report = ReportEngine.buildLocalReport(profile, allCars);
       }
     } else {
-      report = ReportEngine.buildLocalReport(profile, cars);
+      report = ReportEngine.buildLocalReport(profile, allCars);
     }
+
+    // 报告里实际入选的车型（AI 从全部 15 款里挑出的 3 款）。
+    final pickedIds = report.ranking.map((v) => v.carId).toList();
+    final pickedCars = await CarRepository.byIds(pickedIds);
 
     await DbService.insert(
       EvaluationRecord(
         createdAt: DateTime.now(),
         profile: profile,
-        selectedCarIds: provider.selectedCarIds,
+        selectedCarIds: pickedIds,
         report: report,
       ),
     );
@@ -62,7 +65,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => ReportScreen(report: report, cars: cars),
+        builder: (_) => ReportScreen(report: report, cars: pickedCars),
       ),
     );
   }
