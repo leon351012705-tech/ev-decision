@@ -24,6 +24,15 @@ class ReportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final carMap = {for (final c in cars) c.id: c};
     String nameOf(String id) => carMap[id]?.name ?? id;
+    String? priceOf(String id) {
+      final c = carMap[id];
+      if (c == null) return null;
+      // 落地价估算：裸车 × 1.06（含保险/上牌/服务费；EV 购置税免征至 2025 年底）
+      final low = (c.priceMin * 1.06 / 10000).round();
+      final high = (c.priceMax * 1.06 / 10000).round();
+      if (low == high) return '落地约 $low 万';
+      return '落地约 $low-$high 万';
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -64,7 +73,14 @@ class ReportScreen extends StatelessWidget {
             const SizedBox(height: 14),
             const _SectionTitle('最后的建议'),
             const SizedBox(height: 10),
-            _AdviceCard(text: report.finalAdvice),
+            _AdviceCard(
+              text: report.finalAdvice,
+              priceItems: [
+                for (final v in report.ranking)
+                  if (priceOf(v.carId) != null)
+                    (name: nameOf(v.carId), price: priceOf(v.carId)!),
+              ],
+            ),
             const SizedBox(height: 20),
             Center(
               child: Text(
@@ -365,9 +381,10 @@ class _Point extends StatelessWidget {
 }
 
 class _AdviceCard extends StatelessWidget {
-  const _AdviceCard({required this.text});
+  const _AdviceCard({required this.text, this.priceItems = const []});
 
   final String text;
+  final List<({String name, String price})> priceItems;
 
   @override
   Widget build(BuildContext context) {
@@ -379,13 +396,62 @@ class _AdviceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.line),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 13.5,
-          height: 1.6,
-          color: AppTheme.ink,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 13.5,
+              height: 1.6,
+              color: AppTheme.ink,
+            ),
+          ),
+          if (priceItems.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            const Divider(height: 1, color: AppTheme.line),
+            const SizedBox(height: 12),
+            const Text(
+              '落地价参考',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.ink,
+              ),
+            ),
+            const SizedBox(height: 2),
+            const Text(
+              '含保险 / 上牌 / 服务费；EV 购置税免征至 2025 年底',
+              style: TextStyle(fontSize: 11, color: AppTheme.subtle),
+            ),
+            const SizedBox(height: 10),
+            for (final item in priceItems)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.ink,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      item.price,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.ink,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ],
       ),
     );
   }
