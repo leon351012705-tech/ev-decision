@@ -79,7 +79,7 @@ class HomeTab extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               const Text(
-                '15 款热门车型 · 5 个问题 · AI 个性化报告',
+                '80+ 款主流纯电 · 5 个问题 · AI 个性化报告',
                 style: TextStyle(fontSize: 12, color: AppTheme.subtle),
               ),
               const Spacer(flex: 1),

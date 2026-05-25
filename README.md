@@ -9,7 +9,7 @@
 ## 功能
 
 - 5 题引导式问卷，刻画用户画像（场景 / 里程 / 充电条件 / 预算 / 偏好）
-- 15 款热门电动车，覆盖 8 万–35 万 三个价位段
+- **80+ 款主流纯电车型**，覆盖国产新势力 / 传统大厂 / 合资 / BBA / 保时捷等
 - 答完直接出报告——**AI 从全部车型里挑出最适合你的 3 款**，不要你先手动筛选
 - 调用 **智谱 GLM-4-Flash** 生成个性化决策报告：
   - 一句话结论（黑色高对比卡片）
@@ -66,7 +66,7 @@ lib/
     report_screen.dart            决策报告
     history_screen.dart           历史记录
     about_screen.dart             关于
-assets/cars.json                  15 款车型数据
+assets/cars.json                  80+ 款车型数据
 docs/                             交付文档
   PRD.md
   prompt-design.md
